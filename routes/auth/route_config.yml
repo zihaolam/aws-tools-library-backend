@@ -1,0 +1,6 @@
+GetAccessToken:
+    handler: routes/auth.login
+    events:
+        - httpApi:
+              path: /auth/login
+              method: post

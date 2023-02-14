@@ -1,0 +1,27 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+boto3 = "*"
+aws-lambda-powertools = {extras = ["parser"], version = "*"}
+pydantic = "*"
+pynamodb = "*"
+python-dotenv = "*"
+python-jose = "*"
+python-ulid = "*"
+pyyaml = "*"
+s3fs = "*"
+python-datauri = "*"
+
+[dev-packages]
+black = "*"
+moto = "*"
+pytest = "*"
+
+[requires]
+python_version = "3.8"
+
+[pipenv]
+allow_prereleases = true

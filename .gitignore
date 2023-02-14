@@ -1,0 +1,15 @@
+node_modules
+.env.dev
+.env
+.env.prod
+
+__pycache__/
+
+lib
+
+.serverless
+bin/
+pyvenv.cfg
+
+.requirements.zip
+docker

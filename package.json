@@ -1,0 +1,25 @@
+{
+    "name": "lean-backend",
+    "version": "1.0.0",
+    "scripts": {
+        "dev": "export STAGE=dev && sls offline start --functionCleanupIdleTimeSeconds 0.5",
+        "start": "export STAGE=prod && sls offline start --functionCleanupIdleTimeSeconds 0.5",
+        "activate": "pipenv shell",
+        "deploy": "export STAGE=prod && pipenv requirements > requirements.txt &&  sls deploy",
+        "deploy:staging": "export STAGE=staging && pipenv requirements > requirements.txt &&  sls deploy",
+        "db:dev": "docker-compose -f dynamodb-docker-compose.yml up -d && export DYNAMO_ENDPOINT=http://localhost:8392 && dynamodb-admin --port 8212",
+        "db:create:prod": "export STAGE=prod && pipenv run python create_table.py",
+        "db:create:local": "export STAGE=dev && pipenv run python create_table.py",
+        "test": "export STAGE=dev && pipenv run pytest",
+        "test-setup": "export STAGE=dev && pipenv run python env_setup_for_testing.py"
+    },
+    "license": "MIT",
+    "devDependencies": {
+        "dynamodb-admin": "^4.5.0",
+        "serverless": "^3.21.0",
+        "serverless-offline": "^9.0.0",
+        "serverless-plugin-ifelse": "^1.0.7",
+        "serverless-python-requirements": "^6.0.0"
+    },
+    "dependencies": {}
+}

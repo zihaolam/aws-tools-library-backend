@@ -1,0 +1,13 @@
+StorageUtilizationExtractor:
+    handler: routes/storage_utilization.extract
+    events:
+        - httpApi:
+              path: /storage-utilization/extract
+              method: post
+
+FindCumulativeStorageUtilization:
+    handler: routes/storage_utilization.find_cumulative_records
+    events:
+        - httpApi:
+              path: /storage-utilization
+              method: get

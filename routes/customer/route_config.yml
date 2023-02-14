@@ -1,0 +1,20 @@
+FindAllCustomers:
+    handler: routes/customer.find_all
+    events:
+        - httpApi:
+              path: /customer
+              method: get
+
+CreateCustomer:
+    handler: routes/customer.create
+    events:
+        - httpApi:
+              path: /customer
+              method: post
+
+UpdateCustomer:
+    handler: routes/customer.update
+    events:
+        - httpApi:
+              path: /customer/{customer_id}
+              method: put

@@ -1,0 +1,98 @@
+service: AWSToolsLibrary
+
+package:
+    individually: true
+    include:
+        - ./.env.prod
+        - ./.env.staging
+        - ./.env
+        - ./routes/**
+        - ./schemas/**
+        - ./models/**
+        - ./utils/**
+        - ./mocks/**
+        - ./services/**
+        - ./config.py
+        - ./exceptions/**
+    exclude:
+        - ./**
+
+useDotenv: True
+
+provider:
+    name: aws
+    profile: ${opt:aws-profile, "default"}
+    region: ap-southeast-1
+    stage: ${env:STAGE}
+    runtime: python3.8
+    memorySize: 128
+    timeout: 15
+    environment:
+        STAGE: ${self:provider.stage}
+        REGION: ${self:provider.region}
+        BUCKET_NAME: ${env:BUCKET_NAME}
+    layers:
+        - !Ref PythonRequirementsLambdaLayer
+        - arn:aws:lambda:ap-southeast-1:770693421928:layer:Klayers-p39-pandas:11
+    
+    iamRoleStatements:
+        - Effect: Allow
+          Action:
+            - 's3:GetObject'
+            - 's3:PutObject'
+            - 's3:ListBucket'
+          Resource:
+            - arn:aws:s3:::account-bill-bucket/*
+
+
+    httpApi:
+        cors:
+            allowedOrigins:
+                - http://localhost:3000
+            allowedHeaders:
+                - Content-Type
+                - Authorization
+            allowedMethods:
+                - "*"
+            allowCredentials: true
+            maxAge: 12000 # In seconds
+
+plugins:
+    - serverless-python-requirements
+    - serverless-offline
+    - serverless-plugin-ifelse
+
+custom:
+    pythonRequirements:
+        usePipenv: false
+        layer: true
+        # useDownloadCache: true
+        # useStaticCache: true
+    serverless-offline:
+        httpPort: 8081
+    serverlessIfElse:
+        - If: '"${self:provider.stage}" == "prod"'
+          Exclude:
+              - functions.GetAccessToken
+functions:
+    - ${file(routes/storage_utilization/route_config.yml)}
+    - ${file(routes/customer/route_config.yml)}
+
+    - GetSwaggerDoc:
+          package:
+              include:
+                  - ./docs/**
+          handler: docs.swagger_ui_handler
+          events:
+              - httpApi:
+                    path: /docs
+                    method: get
+    - GetOpenApiSchema:
+          package:
+              include:
+                  - ./docs/**
+          handler: docs.openapi_handler
+          events:
+              - httpApi:
+                    path: /openapi.json
+                    method: get
