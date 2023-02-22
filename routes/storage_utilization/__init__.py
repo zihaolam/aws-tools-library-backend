@@ -28,7 +28,7 @@ def extract(event: LambdaEvent[ExtractStorageUtilizationSchema], context):
 
     transformed_files = transform_s3_files(
         [
-            "s3://" + filepath["bucket_name"] + "/" + filepath["file_key"]
+            dict(bucket_name=filepath["bucket_name"], file_key=filepath["file_key"])
             for filepath in bucket_key_pairs
         ]
     )

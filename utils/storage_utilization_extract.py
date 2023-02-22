@@ -1,46 +1,53 @@
-import pandas as pd
-from math import floor, log10
-from typing import List
+from typing import Any, Dict, List
+from math import log10, floor
+import csv
+
+from utils.s3_helper import S3File
+
+BucketKeyPair = Dict[str, str]
 
 
 def round_to_sf(x, n):
     return round(x, -int(floor(log10(abs(x)))) + n - 1)
 
 
-def read_files_from_s3(s3_paths: List[str]) -> pd.DataFrame:
-    df = pd.concat([pd.read_csv(s3_path) for s3_path in s3_paths])
+def csv_to_json(csvFile):
+    data = []
+    with open(csvFile) as csvfile:
+        csv_data = csv.DictReader(csvfile)
+        for rows in csv_data:
+            data.append(rows)  # Appending all the csv rows
 
-    return df
-
-
-def transform(s3_billing_dataframe: pd.DataFrame):
-    storage_services = s3_billing_dataframe.loc[
-        s3_billing_dataframe["Charge description"].str.contains("storage")
-    ]
-    storage_services = storage_services[["Service", "Usage amount"]]
-    storage_services.loc[
-        (storage_services.Service == "Amazon Elastic Compute Cloud"), "Service"
-    ] = "Amazon Elastic Block Store"
-    storage_services["Usage amount"] = storage_services["Usage amount"].astype(float)
-    storage_services = storage_services.groupby("Service").sum()
-    storage_services["Percent"] = (
-        storage_services["Usage amount"] / storage_services["Usage amount"].sum() * 100
-    )
-    storage_services["Service"] = storage_services.index
-    storage_services.Percent = storage_services.Percent.apply(
-        lambda percent: round_to_sf(percent, 4)
-    )
-    storage_services["Usage amount"] = storage_services["Usage amount"].apply(
-        lambda usage_amount: round_to_sf(usage_amount, 4)
-    )
-    storage_services.rename(
-        columns={"Percent": "percent", "Usage amount": "usage", "Service": "service"},
-        inplace=True,
-    )
-
-    return storage_services.to_dict(orient="records")
+    return data
 
 
-def transform_s3_files(s3_paths):
-    df = read_files_from_s3(s3_paths)
-    return transform(df)
+def read_files_from_s3(s3_paths: List[BucketKeyPair]) -> List[Any]:
+    data = []
+
+    for s3_path in s3_paths:
+        with S3File(s3_path["bucket_name"], s3_path["file_key"]) as f:
+            csv_data = csv_to_json(f)
+            data.extend(csv_data)
+
+    return data
+
+
+def transform(s3_billing_csv: List[str]):
+    bill_map: Dict[str, float] = {}
+    for row in s3_billing_csv:
+        if "storage" in row["Charge description"]:
+            service = (
+                "Amazon Elastic Block Store"
+                if row["Service"] == "Amazon Elastic Compute Cloud"
+                else row["Service"]
+            )
+            if service not in bill_map:
+                bill_map[service] = 0
+            bill_map[service] += float(row["Usage amount"])
+
+    return [dict(service=service, usage=usage) for service, usage in bill_map.items()]
+
+
+def transform_s3_files(s3_paths: List[BucketKeyPair]):
+    csvs = read_files_from_s3(s3_paths)
+    return transform(csvs)

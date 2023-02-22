@@ -1,6 +1,7 @@
 import os
 from dotenv import load_dotenv
 
+title = "AWS Tools Library"
 STAGE = os.getenv("STAGE")
 BASEDIR = os.path.abspath(os.path.dirname(__file__))
 ENV_FILE = ".env.dev" if STAGE == "dev" else ".env.prod"

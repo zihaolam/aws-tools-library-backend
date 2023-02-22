@@ -14,6 +14,7 @@ python-ulid = "*"
 pyyaml = "*"
 s3fs = "*"
 python-datauri = "*"
+sqlalchemy = "*"
 
 [dev-packages]
 black = "*"

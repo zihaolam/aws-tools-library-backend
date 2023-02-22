@@ -218,7 +218,7 @@ def get_openapi_schema():
     )
     schema = dict(
         openapi="3.0.2",
-        info={"title": "LEAN Platform API", "version": "0.1.0"},
+        info={"title": config.title, "version": "0.1.0"},
         paths=paths,
         components={
             "schemas": schema_components,

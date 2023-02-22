@@ -33,7 +33,6 @@ provider:
         BUCKET_NAME: ${env:BUCKET_NAME}
     layers:
         - !Ref PythonRequirementsLambdaLayer
-        - arn:aws:lambda:ap-southeast-1:770693421928:layer:Klayers-p39-pandas:11
     
     iamRoleStatements:
         - Effect: Allow
@@ -49,6 +48,7 @@ provider:
         cors:
             allowedOrigins:
                 - http://localhost:3000
+                - https://d17himzmym1odu.cloudfront.net
             allowedHeaders:
                 - Content-Type
                 - Authorization
@@ -66,8 +66,8 @@ custom:
     pythonRequirements:
         usePipenv: false
         layer: true
-        # useDownloadCache: true
-        # useStaticCache: true
+        useDownloadCache: true
+        useStaticCache: true
     serverless-offline:
         httpPort: 8081
     serverlessIfElse:
